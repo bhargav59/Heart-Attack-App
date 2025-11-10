@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.env.*
+
+# Data and models
+app.db
+models/
+!models/.gitkeep
+data/*.csv
+!data/sample_indian_heart.csv
+
+# Streamlit
+.streamlit/
+
+# OS
+.DS_Store
+
+# Notebooks
+.ipynb_checkpoints/
+
+# VSCode
+.vscode/

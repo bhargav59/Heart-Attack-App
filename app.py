@@ -1,18 +1,15 @@
+import os
+import json
 import streamlit as st
-import joblib
 import pandas as pd
+import requests
 
-# Load the trained model and scaler
-try:
-    model = joblib.load("heart_attack_model.pkl")
-    scaler = joblib.load("scaler.pkl")
-except FileNotFoundError:
-    st.error("Error: Model files not found. Please ensure heart_attack_model.pkl and scaler.pkl are in the same directory.")
-    st.stop()
+# Backend API configuration
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="Heart Attack Risk Predictor", layout="centered")
-st.title("🫀 Heart Attack Risk Predictor")
-st.write("Enter patient details to assess heart attack risk.")
+st.title("🫀 Heart Attack Risk Predictor — Full-stack")
+st.write("Enter patient details to assess heart attack risk. This app now uses a backend API for predictions and supports retraining on Indian datasets.")
 
 # Input fields
 st.header("Patient Information")
@@ -53,22 +50,38 @@ input_data = pd.DataFrame([[age, sex_map[sex], cp_map[cp], trtbps, chol, fbs_map
                          columns=["age", "sex", "cp", "trtbps", "chol", "fbs", "restecg", 
                                  "thalachh", "exng", "oldpeak", "slp", "caa", "thall"])
 
-# Scale the data
-input_scaled = scaler.transform(input_data)
-
-# Additional validation to ensure data integrity
-if input_scaled.shape != (1, 13):
-    st.error("Error: Invalid input data format. Please check all fields are filled correctly.")
-    st.stop()
-
 if st.button("Predict Risk", type="primary"):
-    # Get model prediction
-    prediction = model.predict(input_scaled)[0]
-    probability = model.predict_proba(input_scaled)[0]
+    # Prepare payload for backend API
+    payload = {
+        "data": [{
+            "age": int(age),
+            "sex": int(sex_map[sex]),
+            "cp": int(cp_map[cp]),
+            "trtbps": int(trtbps),
+            "chol": int(chol),
+            "fbs": int(fbs_map[fbs]),
+            "restecg": int(restecg_map[restecg]),
+            "thalachh": int(thalachh),
+            "exng": int(exng_map[exng]),
+            "oldpeak": float(oldpeak),
+            "slp": int(slp_map[slp]),
+            "caa": int(caa),
+            "thall": int(thall_map[thall])
+        }]
+    }
 
-    # IMPORTANT: The model was trained with inverted labels!
-    # Class 0 = HIGH RISK, Class 1 = LOW RISK (opposite of documentation)
-    risk_percent = probability[0] * 100  # Use Class 0 probability as HIGH RISK
+    try:
+        resp = requests.post(f"{BACKEND_URL}/predict", json=payload, timeout=20)
+        if resp.status_code != 200:
+            st.error(f"Prediction failed: {resp.status_code} {resp.text}")
+            st.stop()
+        data = resp.json()
+        result = data["results"][0]
+        risk_percent = result["risk_percent"]
+        probability = [result["probabilities"]["high"], result["probabilities"]["low"]]
+    except requests.RequestException as e:
+        st.error(f"Could not reach backend at {BACKEND_URL}. Start the API server and try again. Error: {e}")
+        st.stop()
     
     # Identify risk factors for explanation
     risk_factors = []
@@ -184,4 +197,27 @@ with st.sidebar:
 
     **Disclaimer:** This is for educational purposes only. Always consult healthcare professionals for medical advice.
     """)
+
+    st.divider()
+    st.subheader("Train on Indian Dataset")
+    st.write("Upload a CSV with Indian cohort data matching the 13-feature schema to retrain the model.")
+    uploaded = st.file_uploader("Upload CSV", type=["csv"], help="Must contain columns: age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall,target")
+    if uploaded is not None:
+        # Save to data/ and trigger backend training
+        try:
+            os.makedirs("data", exist_ok=True)
+            save_path = os.path.abspath(os.path.join("data", uploaded.name))
+            with open(save_path, "wb") as f:
+                f.write(uploaded.getbuffer())
+            st.info(f"Saved dataset to {save_path}")
+            # Call backend /train
+            train_payload = {"dataset_path": save_path, "target_column": "target"}
+            resp = requests.post(f"{BACKEND_URL}/train", json=train_payload, timeout=120)
+            if resp.status_code == 200:
+                tr = resp.json()
+                st.success(f"Training complete. Model {tr['model_version']} | Accuracy: {tr['metrics'].get('accuracy', 0):.3f}")
+            else:
+                st.error(f"Training failed: {resp.status_code} {resp.text}")
+        except Exception as e:
+            st.error(f"Error handling uploaded file: {e}")
 
