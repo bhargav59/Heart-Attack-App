@@ -82,6 +82,10 @@ Because fully open Indian cardiac datasets are limited, you have three approache
    ```bash
    python data/fetch_indian_dataset.py --kaggle ankur6u/heart-disease-dataset --out data/indian_heart.csv
    ```
+   To find candidates:
+   ```bash
+   python data/search_kaggle_indian.py --query "heart disease india" --limit 10
+   ```
 3. Synthetic fallback (for development only):
    ```bash
    python data/generate_indian_synthetic.py --rows 1500 --out data/indian_heart_synthetic.csv
