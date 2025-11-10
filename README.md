@@ -29,7 +29,7 @@ docker-compose.yml # One command to run frontend + backend
 
 ## Quick start (local)
 
-1) Install dependencies
+1. Install dependencies
 
 ```bash
 python -m venv .venv
@@ -37,13 +37,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2) Start backend API (in a new terminal)
+2. Start backend API (in a new terminal)
 
 ```bash
 uvicorn backend.main:app --reload --port 8000
 ```
 
-3) Start Streamlit frontend
+3. Start Streamlit frontend
 
 ```bash
 export BACKEND_URL=http://localhost:8000
@@ -69,6 +69,33 @@ python -m ml.train data/your_indian_dataset.csv
 ```
 
 > Note: Label orientation in legacy models was inverted (class 0 = high risk). The API accounts for this when computing risk.
+
+### Acquiring an Indian dataset
+
+Because fully open Indian cardiac datasets are limited, you have three approaches:
+
+1. Direct download: If you have a URL to a CSV, run:
+	```bash
+	python data/fetch_indian_dataset.py --url https://example.com/indian_heart.csv --out data/indian_heart.csv
+	```
+2. Kaggle: Provide a Kaggle dataset slug (and set `KAGGLE_USERNAME`/`KAGGLE_KEY`):
+	```bash
+	python data/fetch_indian_dataset.py --kaggle ankur6u/heart-disease-dataset --out data/indian_heart.csv
+	```
+3. Synthetic fallback (for development only):
+	```bash
+	python data/generate_indian_synthetic.py --rows 1500 --out data/indian_heart_synthetic.csv
+	```
+
+Then train:
+```bash
+uvicorn backend.main:app --port 8000 &  # if not already running
+curl -X POST http://localhost:8000/train \
+  -H "Content-Type: application/json" \
+  -d '{"dataset_path": "data/indian_heart_synthetic.csv", "target_column": "target"}'
+```
+
+Review provenance & licensing before any non-demo usage. Synthetic data is NOT clinically valid.
 
 ## Docker (recommended for quick demo)
 
