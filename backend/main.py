@@ -81,8 +81,17 @@ async def train(req: TrainRequest):
     import pandas as pd
     from ..ml.train import train_on_csv
 
-    metrics, features, model_version = train_on_csv(req.dataset_path, target_col=req.target_column)
+    metrics, features, model_version, class_distribution, confusion = train_on_csv(
+        req.dataset_path,
+        target_col=req.target_column,
+    )
     # refresh ML singleton
     global _ml
     _ml = None
-    return TrainResponse(model_version=model_version, metrics=metrics, features=features)
+    return TrainResponse(
+        model_version=model_version,
+        metrics=metrics,
+        features=features,
+        class_distribution=class_distribution,
+        confusion_matrix=confusion,
+    )

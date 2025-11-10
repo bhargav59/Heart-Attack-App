@@ -39,5 +39,7 @@ class TrainRequest(BaseModel):
 
 class TrainResponse(BaseModel):
     model_version: str
-    metrics: Dict[str, float]
+    metrics: Dict[str, Optional[float]]
     features: List[str]
+    class_distribution: Dict[str, int]
+    confusion_matrix: List[List[int]]
