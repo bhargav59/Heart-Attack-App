@@ -276,38 +276,6 @@ curl -X POST http://localhost:8000/predict_real \
   -d @test_data.json
 ```
 
-## Docker Deployment
-
-### Quick Docker Start
-
-```bash
-docker compose up --build
-```
-
-Access:
-- Frontend: http://localhost:8501
-- Backend: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-
-### Docker Commands
-
-```bash
-# Build and start
-docker compose up --build
-
-# Start in background
-docker compose up -d
-
-# View logs
-docker compose logs -f
-
-# Stop services
-docker compose down
-
-# Remove volumes
-docker compose down -v
-```
-
 ## Model Training
 
 ### Train Your Own Model
@@ -431,7 +399,6 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 - **Backend**: FastAPI with Gunicorn/Uvicorn workers
 - **Database**: PostgreSQL (replace SQLite)
 - **Frontend**: Nginx serving static HTML
-- **Container**: Docker with Docker Compose
 - **Orchestration**: Kubernetes (for scale)
 
 ### Environment Variables for Production

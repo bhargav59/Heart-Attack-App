@@ -283,15 +283,6 @@ pip install -r requirements.txt
 uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-### Docker Deployment
-```bash
-# Build and start services
-docker-compose up -d
-
-# Check logs
-docker-compose logs -f backend
-```
-
 ### Health Check
 ```bash
 curl http://your-domain/health

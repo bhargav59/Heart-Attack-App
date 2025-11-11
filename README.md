@@ -5,8 +5,7 @@ End-to-end heart attack risk prediction app with:
 - Modern web interface + Streamlit frontend
 - FastAPI backend with multiple prediction models
 - Real medical data from hospital coronary angiography (Z-Alizadeh Sani dataset)
-- SQLite persistence for prediction logs (Postgres ready)
-- Dockerized local deployment and CI tests
+- SQLite persistence for prediction logs
 - **✨ 86.89% accuracy, 92.38% ROC AUC on real hospital data (303 patients)**
 
 ## Features
@@ -14,6 +13,7 @@ End-to-end heart attack risk prediction app with:
 ### Three Prediction Models:
 
 1. **`/predict_real` (RECOMMENDED)** ⭐
+
    - 56 clinical features from Z-Alizadeh Sani dataset (UCI)
    - Real hospital data: 303 Asian patients with coronary angiography
    - **86.89% accuracy, 92.38% ROC AUC, 91.11% F1 Score**
@@ -21,6 +21,7 @@ End-to-end heart attack risk prediction app with:
    - Stacking Ensemble (RF, ET, GB, XGBoost, LightGBM, CatBoost)
 
 2. **`/predict` (Standard)**
+
    - 13 clinical features (UCI Heart Disease dataset)
    - Classic heart disease indicators
    - ~85% accuracy
@@ -30,7 +31,9 @@ End-to-end heart attack risk prediction app with:
    - Not recommended for production use
 
 ### Web Interface
+
 - **Modern HTML5 Interface**: `frontend/index.html` ⭐
+
   - Beautiful gradient design
   - 56 clinical input fields organized by category
   - Quick-fill test cases (High Risk / Low Risk patients)
@@ -42,6 +45,7 @@ End-to-end heart attack risk prediction app with:
   - Simple slider-based input
 
 ### API Features
+
 - Multiple model endpoints with different feature sets
 - Probability-based risk assessment with clear risk levels (LOW/MODERATE/HIGH)
 - Database logging of all predictions
@@ -83,8 +87,9 @@ data/                # Datasets and processing
 app.py               # Streamlit frontend (13 features)
 train_z_alizadeh_model.py  # Training script for real model ⭐
 test_real_endpoint.py  # Test suite for real model ⭐
+run_app.sh           # Quick start script ⭐
+stop_app.sh          # Stop script
 requirements.txt     # Python dependencies
-docker-compose.yml   # Docker setup
 ```
 
 ## Quick start (local)
@@ -96,6 +101,7 @@ docker-compose.yml   # Docker setup
 ```
 
 This script will:
+
 - ✅ Start the FastAPI backend on port 8000
 - ✅ Open the HTML frontend in your browser
 - ✅ Check backend health
@@ -122,21 +128,25 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ### 3. Choose your interface:
 
 **Option A: Modern Web Interface (Recommended)** ⭐
+
 ```bash
 # Open frontend/index.html in your browser
 open frontend/index.html  # macOS
 # Or: start frontend/index.html  (Windows)
 # Or: xdg-open frontend/index.html  (Linux)
 ```
+
 - 56 clinical features (real medical data)
 - Beautiful UI with quick-fill test cases
 - Test with High Risk and Low Risk patient examples
 
 **Option B: Streamlit Interface**
+
 ```bash
 export BACKEND_URL=http://localhost:8000
 streamlit run app.py
 ```
+
 - 13 standard features
 - Access at: http://localhost:8501
 
@@ -153,6 +163,7 @@ python train_z_alizadeh_model.py
 ```
 
 This will:
+
 - Load the Z-Alizadeh Sani dataset (303 real patients from hospital)
 - Perform feature engineering (56 → 74 → 40 features)
 - Train a Stacking Ensemble (6 base models + meta-learner)
@@ -160,22 +171,12 @@ This will:
 - Save models to `models/*_real.pkl`
 
 Expected results:
+
 - **Accuracy**: ~86.89%
 - **ROC AUC**: ~92.38%
 - **F1 Score**: ~91.11%
 
 See `REAL_DATA_TRAINING_REPORT.md` for detailed training metrics.
-
-## Docker (quick demo)
-
-```bash
-docker compose up --build
-```
-
-Then visit:
-- Frontend: http://localhost:8501 (Streamlit)
-- Backend: http://localhost:8000
-- API Docs: http://localhost:8000/docs
 
 ## API examples
 
