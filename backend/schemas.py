@@ -30,6 +30,8 @@ class PredictResponseItem(BaseModel):
     probabilities: Dict[str, float]
 
 class PredictResponse(BaseModel):
+    model_config = {"protected_namespaces": ()}
+    
     results: List[PredictResponseItem]
     model_version: str
 
@@ -38,6 +40,8 @@ class TrainRequest(BaseModel):
     target_column: str = "target"
 
 class TrainResponse(BaseModel):
+    model_config = {"protected_namespaces": ()}
+    
     model_version: str
     metrics: Dict[str, Optional[float]]
     features: List[str]

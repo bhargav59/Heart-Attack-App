@@ -33,6 +33,21 @@ def get_ml() -> MLService:
         _ml = MLService()
     return _ml
 
+@app.get("/")
+async def root():
+    return {
+        "message": "Heart Attack Risk Prediction API",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "predict": "/predict (POST)",
+            "train": "/train (POST)",
+            "docs": "/docs",
+            "redoc": "/redoc"
+        },
+        "model_version": MODEL_VERSION
+    }
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}

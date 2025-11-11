@@ -7,6 +7,7 @@ End-to-end heart attack risk prediction app with:
 - ML training pipeline to retrain on Indian datasets
 - SQLite persistence for prediction logs (Postgres ready)
 - Dockerized local deployment and CI tests
+- **✨ Newly trained on 10,000 Indian patient records**
 
 ## Features
 
@@ -14,6 +15,7 @@ End-to-end heart attack risk prediction app with:
 - Probability-based risk with clear risk levels (low/moderate/high)
 - File upload to retrain model on Indian cohorts (CSV)
 - API endpoints: `/health`, `/predict`, `/train`
+- Automatic feature mapping for Indian dataset schemas
 
 ## Project structure
 
@@ -37,13 +39,23 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2. Start backend API (in a new terminal)
+2. **Retrain the model** (optional - model already included)
+
+The app comes with a pre-trained model based on 10,000 Indian patient records. To retrain:
+
+```bash
+python retrain_model.py
+```
+
+This will use the dataset at `data/_kaggle_tmp/heart_attack_prediction_india.csv`.
+
+3. Start backend API (in a new terminal)
 
 ```bash
 uvicorn backend.main:app --reload --port 8000
 ```
 
-3. Start Streamlit frontend
+4. Start Streamlit frontend
 
 ```bash
 export BACKEND_URL=http://localhost:8000
