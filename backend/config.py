@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR  # Alias for clarity in ml_service
 
 # Model paths
 MODEL_DIR = BASE_DIR / "models"

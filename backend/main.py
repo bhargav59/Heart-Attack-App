@@ -64,9 +64,9 @@ async def predict(req: PredictRequest, db: Session = Depends(get_db)):
 
     results: List[PredictResponseItem] = []
     for i in range(len(X)):
-        # IMPORTANT: model trained with inverted labels: class 0 = HIGH RISK
-        prob_high = float(probs[i][0])
-        prob_low = float(probs[i][1])
+        # Advanced model (Indian dataset): class 0 = LOW RISK, class 1 = HIGH RISK
+        prob_low = float(probs[i][0])
+        prob_high = float(probs[i][1])
         risk_level, risk_percent = ml.to_risk(prob_high)
 
         # Persist log
