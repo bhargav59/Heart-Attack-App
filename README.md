@@ -2,178 +2,242 @@
 
 End-to-end heart attack risk prediction app with:
 
-- Streamlit frontend
-- FastAPI backend with prediction and training endpoints
-- ML training pipeline to retrain on Indian datasets
+- Modern web interface + Streamlit frontend
+- FastAPI backend with multiple prediction models
+- Real medical data from hospital coronary angiography (Z-Alizadeh Sani dataset)
 - SQLite persistence for prediction logs (Postgres ready)
 - Dockerized local deployment and CI tests
-- **✨ Newly trained on 10,000 Indian patient records**
+- **✨ 86.89% accuracy, 92.38% ROC AUC on real hospital data (303 patients)**
 
 ## Features
 
-- 13 clinical inputs (age, sex, cp, trtbps, chol, fbs, restecg, thalachh, exng, oldpeak, slp, caa, thall)
-- Probability-based risk with clear risk levels (low/moderate/high)
-- File upload to retrain model on Indian cohorts (CSV)
-- API endpoints: `/health`, `/predict`, `/train`
-- Automatic feature mapping for Indian dataset schemas
+### Three Prediction Models:
+
+1. **`/predict_real` (RECOMMENDED)** ⭐
+   - 56 clinical features from Z-Alizadeh Sani dataset (UCI)
+   - Real hospital data: 303 Asian patients with coronary angiography
+   - **86.89% accuracy, 92.38% ROC AUC, 91.11% F1 Score**
+   - Features: Demographics, Risk Factors, ECG, Labs, Echo
+   - Stacking Ensemble (RF, ET, GB, XGBoost, LightGBM, CatBoost)
+
+2. **`/predict` (Standard)**
+   - 13 clinical features (UCI Heart Disease dataset)
+   - Classic heart disease indicators
+   - ~85% accuracy
+
+3. **`/predict_indian` (Deprecated)**
+   - 23 features from synthetic data
+   - Not recommended for production use
+
+### Web Interface
+- **Modern HTML5 Interface**: `frontend/index.html` ⭐
+  - Beautiful gradient design
+  - 56 clinical input fields organized by category
+  - Quick-fill test cases (High Risk / Low Risk patients)
+  - Real-time predictions with color-coded risk levels
+  - Model performance metrics display
+
+- **Streamlit Interface**: `app.py`
+  - 13 standard features
+  - Simple slider-based input
+
+### API Features
+- Multiple model endpoints with different feature sets
+- Probability-based risk assessment with clear risk levels (LOW/MODERATE/HIGH)
+- Database logging of all predictions
+- API endpoints: `/health`, `/predict`, `/predict_real`, `/docs`
+- Interactive API documentation (Swagger UI)
 
 ## Project structure
 
 ```
-backend/           # FastAPI service (prediction, training, logging)
-ml/                # Training scripts and utilities
-models/            # Saved model + scaler (artifacts)
-data/              # Datasets (ignored), includes sample_indian_heart.csv
-app.py             # Streamlit frontend
-requirements.txt   # Python dependencies
-docker-compose.yml # One command to run frontend + backend
+backend/              # FastAPI service (prediction, logging)
+├── main.py          # FastAPI app with 3 prediction endpoints
+├── ml_service.py    # Standard 13-feature model
+├── ml_service_z_alizadeh.py  # Real 56-feature model ⭐
+├── ml_service_indian.py      # Deprecated Indian model
+├── schemas*.py      # Pydantic models for validation
+├── database.py      # SQLite database
+└── models.py        # Database models
+
+frontend/            # Web interfaces
+├── index.html       # Modern HTML5 interface ⭐
+└── (Streamlit: app.py in root)
+
+ml/                  # Training utilities
+├── train.py         # Training pipeline
+└── feature_engineering.py  # Feature creation
+
+models/              # Trained model artifacts
+├── heart_attack_model_real.pkl  # Real model ⭐
+├── scaler_real.pkl             # RobustScaler ⭐
+└── feature_names_real.pkl      # 40 selected features ⭐
+
+data/                # Datasets and processing
+├── real_datasets/
+│   └── z_alizadeh_sani/
+│       └── z_alizadeh_sani.csv  # Real medical data ⭐
+├── download_z_alizadeh_sani.py
+└── process_z_alizadeh_sani.py
+
+app.py               # Streamlit frontend (13 features)
+train_z_alizadeh_model.py  # Training script for real model ⭐
+test_real_endpoint.py  # Test suite for real model ⭐
+requirements.txt     # Python dependencies
+docker-compose.yml   # Docker setup
 ```
 
 ## Quick start (local)
 
-1. Install dependencies
+### 1. Install dependencies
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-2. **Retrain the model** (optional - model already included)
-
-The app comes with a pre-trained model based on 10,000 Indian patient records. To retrain:
+### 2. Start backend API
 
 ```bash
-python retrain_model.py
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-This will use the dataset at `data/_kaggle_tmp/heart_attack_prediction_india.csv`.
+### 3. Choose your interface:
 
-3. Start backend API (in a new terminal)
-
+**Option A: Modern Web Interface (Recommended)** ⭐
 ```bash
-uvicorn backend.main:app --reload --port 8000
+# Open frontend/index.html in your browser
+open frontend/index.html  # macOS
+# Or: start frontend/index.html  (Windows)
+# Or: xdg-open frontend/index.html  (Linux)
 ```
+- 56 clinical features (real medical data)
+- Beautiful UI with quick-fill test cases
+- Test with High Risk and Low Risk patient examples
 
-4. Start Streamlit frontend
-
+**Option B: Streamlit Interface**
 ```bash
 export BACKEND_URL=http://localhost:8000
 streamlit run app.py
 ```
+- 13 standard features
+- Access at: http://localhost:8501
 
-Open http://localhost:8501
+### 4. API Documentation
 
-## Train on an Indian dataset
+Visit http://localhost:8000/docs for interactive API documentation (Swagger UI)
 
-Option A (UI): Use the Streamlit sidebar to upload a CSV matching the schema:
+## Train your own model
 
-```
-age,sex,cp,trtbps,chol,fbs,restecg,thalachh,exng,oldpeak,slp,caa,thall,target
-```
-
-See `data/sample_indian_heart.csv` for an example. After upload, the app will call the backend `/train` endpoint and refresh the model.
-
-Option B (CLI):
+The app comes with pre-trained models on real medical data. To retrain:
 
 ```bash
-python -m ml.train data/your_indian_dataset.csv
+python train_z_alizadeh_model.py
 ```
 
-> Note: Label orientation in legacy models was inverted (class 0 = high risk). The API accounts for this when computing risk.
+This will:
+- Load the Z-Alizadeh Sani dataset (303 real patients from hospital)
+- Perform feature engineering (56 → 74 → 40 features)
+- Train a Stacking Ensemble (6 base models + meta-learner)
+- Use SMOTE-Tomek for class balancing
+- Save models to `models/*_real.pkl`
 
-### Acquiring an Indian dataset
+Expected results:
+- **Accuracy**: ~86.89%
+- **ROC AUC**: ~92.38%
+- **F1 Score**: ~91.11%
 
-Because fully open Indian cardiac datasets are limited, you have three approaches:
+See `REAL_DATA_TRAINING_REPORT.md` for detailed training metrics.
 
-1. Direct download: If you have a URL to a CSV, run:
-   ```bash
-   python data/fetch_indian_dataset.py --url https://example.com/indian_heart.csv --out data/indian_heart.csv
-   ```
-2. Kaggle: Provide a Kaggle dataset slug (and set `KAGGLE_USERNAME`/`KAGGLE_KEY`):
-   ```bash
-   python data/fetch_indian_dataset.py --kaggle ankur6u/heart-disease-dataset --out data/indian_heart.csv
-   ```
-   To find candidates:
-   ```bash
-   python data/search_kaggle_indian.py --query "heart disease india" --limit 10
-   ```
-3. Synthetic fallback (for development only):
-   ```bash
-   python data/generate_indian_synthetic.py --rows 1500 --out data/indian_heart_synthetic.csv
-   ```
-
-Then train:
-
-```bash
-uvicorn backend.main:app --port 8000 &  # if not already running
-curl -X POST http://localhost:8000/train \
-  -H "Content-Type: application/json" \
-  -d '{"dataset_path": "data/indian_heart_synthetic.csv", "target_column": "target"}'
-```
-
-Review provenance & licensing before any non-demo usage. Synthetic data is NOT clinically valid.
-
-### Web scraping (last resort)
-
-If a site publishes a heart-related table (and permits scraping per its Terms of Service), you can try extracting it:
-
-```bash
-python data/scrape_indian_dataset.py --url https://example.com/heart_table.html --out data/indian_scraped.csv
-```
-
-Notes:
-
-- Works best for pages with HTML tables. JavaScript-rendered tables may not load without a headless browser.
-- Column names are mapped heuristically to the required schema. Review and clean the output before training.
-- Respect robots.txt and licensing; don’t scrape protected content.
-
-## Docker (recommended for quick demo)
+## Docker (quick demo)
 
 ```bash
 docker compose up --build
 ```
 
-Then visit http://localhost:8501 (frontend) and http://localhost:8000/health (backend).
+Then visit:
+- Frontend: http://localhost:8501 (Streamlit)
+- Backend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
 ## API examples
 
-Predict:
+### Predict with Real Model (Recommended) ⭐
+
+```bash
+curl -X POST http://localhost:8000/predict_real \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Age": 67, "Sex": "Male", "Weight": 80, "Length": 175, "BMI": 26.12,
+    "DM": 1, "HTN": 1, "Current Smoker": 1, "EX-Smoker": 0,
+    "FH": "Y", "Obesity": "Y", "CRF": "N", "CVA": "N",
+    "Airway disease": "N", "Thyroid Disease": "N", "CHF": "N", "DLP": "Y",
+    "BP": 150, "PR": 85, "Edema": 0,
+    "Weak Peripheral Pulse": "N", "Lung rales": "N",
+    "Systolic Murmur": "N", "Diastolic Murmur": "N",
+    "Typical Chest Pain": 1, "Dyspnea": "Y", "Function Class": 3,
+    "Atypical": "N", "Nonanginal": "N", "Exertional CP": "N", "LowTH Ang": "N",
+    "Q Wave": 1, "St Elevation": 0, "St Depression": 1, "Tinversion": 1,
+    "LVH": "Y", "Poor R Progression": "N", "BBB": "N",
+    "FBS": 180, "CR": 1.2, "TG": 220, "LDL": 160, "HDL": 32,
+    "BUN": 22, "ESR": 35, "HB": 14.0, "K": 4.3, "Na": 140,
+    "WBC": 9500, "Lymph": 28, "Neut": 68, "PLT": 280,
+    "EF-TTE": 38, "Region RWMA": 3, "VHD": "mild"
+  }'
+```
+
+### Predict with Standard Model
 
 ```bash
 curl -X POST http://localhost:8000/predict \
-	-H "Content-Type: application/json" \
-	-d '{
-		"data": [{
-			"age": 55, "sex": 1, "cp": 0, "trtbps": 140, "chol": 260,
-			"fbs": 0, "restecg": 1, "thalachh": 150, "exng": 0,
-			"oldpeak": 1.2, "slp": 1, "caa": 0, "thall": 2
-		}]
-	}'
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": [{
+      "age": 55, "sex": 1, "cp": 0, "trtbps": 140, "chol": 260,
+      "fbs": 0, "restecg": 1, "thalachh": 150, "exng": 0,
+      "oldpeak": 1.2, "slp": 1, "caa": 0, "thall": 2
+    }]
+  }'
 ```
 
-Train:
+## Testing
+
+Run the comprehensive test suite:
 
 ```bash
-curl -X POST http://localhost:8000/train \
-	-H "Content-Type: application/json" \
-	-d '{"dataset_path": "data/sample_indian_heart.csv", "target_column": "target"}'
+python test_real_endpoint.py
 ```
+
+This tests both HIGH RISK and LOW RISK patient scenarios with the real model.
 
 ## Configuration
 
-Copy `.env.example` to `.env` and adjust as needed.
+Copy `.env.example` to `.env` and adjust as needed:
 
-- `BACKEND_URL` — where Streamlit calls the API
-- `DATABASE_URL` — defaults to SQLite (switch to Postgres if desired)
-- `CORS_ORIGINS` — allowed origins for the API
+- `BACKEND_URL` — where Streamlit calls the API (default: http://localhost:8000)
+- `DATABASE_URL` — database connection (default: SQLite, supports Postgres)
+- `CORS_ORIGINS` — allowed origins for API requests
+
+## Documentation
+
+- **README.md** (this file) — Quick start and overview
+- **API_USAGE_GUIDE.md** — Complete API documentation with all 56 fields
+- **API_REFERENCE.md** — API endpoint reference
+- **GETTING_STARTED.md** — Detailed setup instructions
+- **REAL_DATA_TRAINING_REPORT.md** — Model training report and metrics
 
 ## Development notes
 
-- Dependencies are pinned in `requirements.txt`.
-- Tests run via `pytest`. See `.github/workflows/ci.yml` for CI.
-- Models are stored under `models/` (ignored by git). The app falls back to root-level artifacts for backward compatibility.
+- All dependencies are in `requirements.txt`
+- Models stored in `models/` (gitignored, only `*_real.pkl` files are used in production)
+- The `/predict_indian` endpoint uses deprecated synthetic data
+- **Use `/predict_real` for production applications**
 
 ## Disclaimer
 
-This app is for educational purposes only and is not a medical device. Always consult healthcare professionals for medical advice.
+This app is for educational and research purposes only. It is NOT a medical device and should not be used for clinical diagnosis. Always consult qualified healthcare professionals for medical advice.
+
+## License
+
+See LICENSE file for details.
