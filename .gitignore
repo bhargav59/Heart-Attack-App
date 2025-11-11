@@ -15,10 +15,19 @@ kaggle.json
 
 # Data and models
 app.db
+predictions.db
 models/
 !models/.gitkeep
 data/*.csv
 !data/sample_indian_heart.csv
+
+# Research papers and docs
+*.pdf
+
+# Training artifacts
+catboost_info/
+*.csv
+!data/**/*.csv
 
 # Streamlit
 .streamlit/
