@@ -71,17 +71,18 @@ def create_advanced_features(X_df):
     """Create interaction and domain-specific features"""
     X_new = X_df.copy()
     
-    # Interaction features
+    # Interaction features (use actual column names: trtbps, thalachh)
     X_new['age_chol'] = X_new['age'] * X_new['chol']
-    X_new['age_trestbps'] = X_new['age'] * X_new['trestbps']
-    X_new['chol_trestbps'] = X_new['chol'] * X_new['trestbps']
+    X_new['age_trtbps'] = X_new['age'] * X_new['trtbps']
+    X_new['chol_trtbps'] = X_new['chol'] * X_new['trtbps']
+    X_new['age_thalachh'] = X_new['age'] * X_new['thalachh']
     
     # Risk scores
     X_new['cardiovascular_risk'] = (
         (X_new['age'] > 60).astype(int) +
         (X_new['chol'] > 240).astype(int) +
-        (X_new['trestbps'] > 140).astype(int) +
-        (X_new['thalach'] < 100).astype(int)
+        (X_new['trtbps'] > 140).astype(int) +
+        (X_new['thalachh'] < 100).astype(int)
     )
     
     # Age groups
@@ -93,8 +94,12 @@ def create_advanced_features(X_df):
     X_new['chol_category'] = X_new['chol_category'].astype(int)
     
     # Blood pressure categories
-    X_new['bp_category'] = pd.cut(X_new['trestbps'], bins=[0, 120, 140, 999], labels=[0, 1, 2])
+    X_new['bp_category'] = pd.cut(X_new['trtbps'], bins=[0, 120, 140, 999], labels=[0, 1, 2])
     X_new['bp_category'] = X_new['bp_category'].astype(int)
+    
+    # Heart rate categories
+    X_new['hr_category'] = pd.cut(X_new['thalachh'], bins=[0, 100, 150, 999], labels=[0, 1, 2])
+    X_new['hr_category'] = X_new['hr_category'].astype(int)
     
     return X_new
 
