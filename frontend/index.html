@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heart Attack Risk Predictor - Real Medical Data</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header .subtitle {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
+
+      .content {
+        padding: 30px;
+      }
+
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+      }
+
+      .section h2 {
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+        font-size: 0.9em;
+      }
+
+      .form-group input,
+      .form-group select {
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: all 0.3s;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 40px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin: 20px auto;
+        display: block;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .result-container {
+        display: none;
+        margin-top: 30px;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+      }
+
+      .result-container.show {
+        display: block;
+        animation: slideIn 0.5s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-container.low-risk {
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+      }
+
+      .result-container.moderate-risk {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      }
+
+      .result-container.high-risk {
+        background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+      }
+
+      .result-icon {
+        font-size: 4em;
+        margin-bottom: 15px;
+      }
+
+      .result-title {
+        font-size: 2em;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .result-probability {
+        font-size: 3em;
+        font-weight: 700;
+        margin: 15px 0;
+      }
+
+      .result-recommendation {
+        font-size: 1.1em;
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+      }
+
+      .model-info {
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+        text-align: left;
+      }
+
+      .model-info h3 {
+        margin-bottom: 10px;
+      }
+
+      .model-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .model-stat {
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .model-stat .label {
+        font-size: 0.9em;
+        color: #666;
+      }
+
+      .model-stat .value {
+        font-size: 1.5em;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-message {
+        display: none;
+        background: #ff6b6b;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      .help-text {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: 3px;
+      }
+
+      .quick-fill {
+        margin-bottom: 20px;
+      }
+
+      .quick-fill button {
+        background: #f8f9fa;
+        border: 2px solid #667eea;
+        color: #667eea;
+        padding: 10px 20px;
+        border-radius: 8px;
+        margin-right: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      .quick-fill button:hover {
+        background: #667eea;
+        color: white;
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 1.8em;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🫀 Heart Attack Risk Predictor</h1>
+        <div class="subtitle">Real Medical Data - Z-Alizadeh Sani Model</div>
+        <div class="badge">86.89% Accuracy | 92.38% ROC AUC</div>
+      </div>
+
+      <div class="content">
+        <div class="quick-fill">
+          <h3 style="margin-bottom: 10px">Quick Fill Test Cases:</h3>
+          <button onclick="fillHighRisk()">🔴 High Risk Patient</button>
+          <button onclick="fillLowRisk()">🟢 Low Risk Patient</button>
+          <button onclick="resetForm()">🔄 Clear Form</button>
+        </div>
+
+        <form id="predictionForm">
+          <!-- Demographics -->
+          <div class="section">
+            <h2>📋 Demographics</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="Age">Age *</label>
+                <input
+                  type="number"
+                  id="Age"
+                  name="Age"
+                  min="18"
+                  max="120"
+                  required
+                />
+                <span class="help-text">18-120 years</span>
+              </div>
+              <div class="form-group">
+                <label for="Sex">Sex *</label>
+                <select id="Sex" name="Sex" required>
+                  <option value="">Select...</option>
+                  <option value="Male">Male</option>
+                  <option value="Fmale">Female</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Weight">Weight (kg) *</label>
+                <input
+                  type="number"
+                  id="Weight"
+                  name="Weight"
+                  min="30"
+                  max="200"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">30-200 kg</span>
+              </div>
+              <div class="form-group">
+                <label for="Length">Height (cm) *</label>
+                <input
+                  type="number"
+                  id="Length"
+                  name="Length"
+                  min="100"
+                  max="250"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">100-250 cm</span>
+              </div>
+              <div class="form-group">
+                <label for="BMI">BMI *</label>
+                <input
+                  type="number"
+                  id="BMI"
+                  name="BMI"
+                  min="10"
+                  max="60"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">10-60</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Factors -->
+          <div class="section">
+            <h2>⚠️ Risk Factors</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="DM">Diabetes Mellitus *</label>
+                <select id="DM" name="DM" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="HTN">Hypertension *</label>
+                <select id="HTN" name="HTN" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Current Smoker">Current Smoker *</label>
+                <select id="Current Smoker" name="Current Smoker" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="EX-Smoker">Ex-Smoker *</label>
+                <select id="EX-Smoker" name="EX-Smoker" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="FH">Family History *</label>
+                <select id="FH" name="FH" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Obesity">Obesity *</label>
+                <select id="Obesity" name="Obesity" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Medical History -->
+          <div class="section">
+            <h2>🏥 Medical History</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="CRF">Chronic Renal Failure *</label>
+                <select id="CRF" name="CRF" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="CVA">Stroke (CVA) *</label>
+                <select id="CVA" name="CVA" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Airway disease">Airway Disease *</label>
+                <select id="Airway disease" name="Airway disease" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Thyroid Disease">Thyroid Disease *</label>
+                <select id="Thyroid Disease" name="Thyroid Disease" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="CHF">Congestive Heart Failure *</label>
+                <select id="CHF" name="CHF" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="DLP">Dyslipidemia *</label>
+                <select id="DLP" name="DLP" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vital Signs -->
+          <div class="section">
+            <h2>🩺 Vital Signs & Physical Exam</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="BP">Blood Pressure (mmHg) *</label>
+                <input
+                  type="number"
+                  id="BP"
+                  name="BP"
+                  min="60"
+                  max="250"
+                  required
+                />
+                <span class="help-text">60-250 mmHg</span>
+              </div>
+              <div class="form-group">
+                <label for="PR">Pulse Rate (bpm) *</label>
+                <input
+                  type="number"
+                  id="PR"
+                  name="PR"
+                  min="40"
+                  max="200"
+                  required
+                />
+                <span class="help-text">40-200 bpm</span>
+              </div>
+              <div class="form-group">
+                <label for="Edema">Edema *</label>
+                <select id="Edema" name="Edema" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Weak Peripheral Pulse"
+                  >Weak Peripheral Pulse *</label
+                >
+                <select
+                  id="Weak Peripheral Pulse"
+                  name="Weak Peripheral Pulse"
+                  required
+                >
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Lung rales">Lung Rales *</label>
+                <select id="Lung rales" name="Lung rales" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Systolic Murmur">Systolic Murmur *</label>
+                <select id="Systolic Murmur" name="Systolic Murmur" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Diastolic Murmur">Diastolic Murmur *</label>
+                <select id="Diastolic Murmur" name="Diastolic Murmur" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Symptoms -->
+          <div class="section">
+            <h2>💊 Symptoms</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="Typical Chest Pain">Typical Chest Pain *</label>
+                <select
+                  id="Typical Chest Pain"
+                  name="Typical Chest Pain"
+                  required
+                >
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Dyspnea">Dyspnea (Shortness of Breath) *</label>
+                <select id="Dyspnea" name="Dyspnea" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Function Class">Function Class (NYHA) *</label>
+                <select id="Function Class" name="Function Class" required>
+                  <option value="">Select...</option>
+                  <option value="0">Class 0 (No symptoms)</option>
+                  <option value="1">Class 1 (Mild)</option>
+                  <option value="2">Class 2 (Moderate)</option>
+                  <option value="3">Class 3 (Severe)</option>
+                  <option value="4">Class 4 (Very Severe)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Atypical">Atypical Symptoms *</label>
+                <select id="Atypical" name="Atypical" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Nonanginal">Non-anginal Pain *</label>
+                <select id="Nonanginal" name="Nonanginal" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Exertional CP">Exertional Chest Pain *</label>
+                <select id="Exertional CP" name="Exertional CP" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="LowTH Ang">Low Threshold Angina *</label>
+                <select id="LowTH Ang" name="LowTH Ang" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ECG Findings -->
+          <div class="section">
+            <h2>📈 ECG Findings</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="Q Wave">Q Wave *</label>
+                <select id="Q Wave" name="Q Wave" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="St Elevation">ST Elevation *</label>
+                <select id="St Elevation" name="St Elevation" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="St Depression">ST Depression *</label>
+                <select id="St Depression" name="St Depression" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Tinversion">T Inversion *</label>
+                <select id="Tinversion" name="Tinversion" required>
+                  <option value="">Select...</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="LVH">Left Ventricular Hypertrophy *</label>
+                <select id="LVH" name="LVH" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="Poor R Progression">Poor R Progression *</label>
+                <select
+                  id="Poor R Progression"
+                  name="Poor R Progression"
+                  required
+                >
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="Y">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="BBB">Bundle Branch Block *</label>
+                <select id="BBB" name="BBB" required>
+                  <option value="">Select...</option>
+                  <option value="N">No</option>
+                  <option value="LBBB">Left BBB</option>
+                  <option value="RBBB">Right BBB</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Laboratory Tests -->
+          <div class="section">
+            <h2>🔬 Laboratory Tests</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="FBS">Fasting Blood Sugar (mg/dL) *</label>
+                <input
+                  type="number"
+                  id="FBS"
+                  name="FBS"
+                  min="50"
+                  max="500"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">50-500 mg/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="CR">Creatinine (mg/dL) *</label>
+                <input
+                  type="number"
+                  id="CR"
+                  name="CR"
+                  min="0.3"
+                  max="15"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">0.3-15 mg/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="TG">Triglycerides (mg/dL) *</label>
+                <input
+                  type="number"
+                  id="TG"
+                  name="TG"
+                  min="30"
+                  max="1000"
+                  step="1"
+                  required
+                />
+                <span class="help-text">30-1000 mg/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="LDL">LDL Cholesterol (mg/dL) *</label>
+                <input
+                  type="number"
+                  id="LDL"
+                  name="LDL"
+                  min="20"
+                  max="400"
+                  step="1"
+                  required
+                />
+                <span class="help-text">20-400 mg/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="HDL">HDL Cholesterol (mg/dL) *</label>
+                <input
+                  type="number"
+                  id="HDL"
+                  name="HDL"
+                  min="10"
+                  max="150"
+                  step="1"
+                  required
+                />
+                <span class="help-text">10-150 mg/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="BUN">Blood Urea Nitrogen (mg/dL) *</label>
+                <input
+                  type="number"
+                  id="BUN"
+                  name="BUN"
+                  min="5"
+                  max="200"
+                  step="1"
+                  required
+                />
+                <span class="help-text">5-200 mg/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="ESR">ESR (mm/hr) *</label>
+                <input
+                  type="number"
+                  id="ESR"
+                  name="ESR"
+                  min="0"
+                  max="200"
+                  step="1"
+                  required
+                />
+                <span class="help-text">0-200 mm/hr</span>
+              </div>
+              <div class="form-group">
+                <label for="HB">Hemoglobin (g/dL) *</label>
+                <input
+                  type="number"
+                  id="HB"
+                  name="HB"
+                  min="5"
+                  max="20"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">5-20 g/dL</span>
+              </div>
+              <div class="form-group">
+                <label for="K">Potassium (mEq/L) *</label>
+                <input
+                  type="number"
+                  id="K"
+                  name="K"
+                  min="2"
+                  max="8"
+                  step="0.1"
+                  required
+                />
+                <span class="help-text">2-8 mEq/L</span>
+              </div>
+              <div class="form-group">
+                <label for="Na">Sodium (mEq/L) *</label>
+                <input
+                  type="number"
+                  id="Na"
+                  name="Na"
+                  min="120"
+                  max="160"
+                  step="1"
+                  required
+                />
+                <span class="help-text">120-160 mEq/L</span>
+              </div>
+              <div class="form-group">
+                <label for="WBC">White Blood Cells (cells/μL) *</label>
+                <input
+                  type="number"
+                  id="WBC"
+                  name="WBC"
+                  min="1000"
+                  max="50000"
+                  step="100"
+                  required
+                />
+                <span class="help-text">1000-50000 cells/μL</span>
+              </div>
+              <div class="form-group">
+                <label for="Lymph">Lymphocytes (%) *</label>
+                <input
+                  type="number"
+                  id="Lymph"
+                  name="Lymph"
+                  min="0"
+                  max="100"
+                  step="1"
+                  required
+                />
+                <span class="help-text">0-100%</span>
+              </div>
+              <div class="form-group">
+                <label for="Neut">Neutrophils (%) *</label>
+                <input
+                  type="number"
+                  id="Neut"
+                  name="Neut"
+                  min="0"
+                  max="100"
+                  step="1"
+                  required
+                />
+                <span class="help-text">0-100%</span>
+              </div>
+              <div class="form-group">
+                <label for="PLT">Platelets (×10³/μL) *</label>
+                <input
+                  type="number"
+                  id="PLT"
+                  name="PLT"
+                  min="50"
+                  max="1000"
+                  step="10"
+                  required
+                />
+                <span class="help-text">50-1000 ×10³/μL</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Echocardiography -->
+          <div class="section">
+            <h2>🫀 Echocardiography</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="EF-TTE">Ejection Fraction (%) *</label>
+                <input
+                  type="number"
+                  id="EF-TTE"
+                  name="EF-TTE"
+                  min="10"
+                  max="80"
+                  step="1"
+                  required
+                />
+                <span class="help-text">10-80%</span>
+              </div>
+              <div class="form-group">
+                <label for="Region RWMA"
+                  >Regional Wall Motion Abnormality *</label
+                >
+                <select id="Region RWMA" name="Region RWMA" required>
+                  <option value="">Select...</option>
+                  <option value="0">0 (None)</option>
+                  <option value="1">1 region</option>
+                  <option value="2">2 regions</option>
+                  <option value="3">3 regions</option>
+                  <option value="4">4 regions</option>
+                  <option value="5">5 regions</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="VHD">Valvular Heart Disease *</label>
+                <select id="VHD" name="VHD" required>
+                  <option value="">Select...</option>
+                  <option value="N">None</option>
+                  <option value="mild">Mild</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="Severe">Severe</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">
+            🔍 Predict Heart Attack Risk
+          </button>
+        </form>
+
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p style="margin-top: 15px">Analyzing patient data...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="result-container" id="resultContainer">
+          <div class="result-icon" id="resultIcon"></div>
+          <div class="result-title" id="resultTitle"></div>
+          <div class="result-probability" id="resultProbability"></div>
+          <div class="result-recommendation" id="resultRecommendation"></div>
+
+          <div class="model-info">
+            <h3>📊 Model Performance Metrics</h3>
+            <div class="model-info-grid" id="modelInfoGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:8000";
+
+      // High Risk Patient Test Data
+      function fillHighRisk() {
+        document.getElementById("Age").value = 67;
+        document.getElementById("Sex").value = "Male";
+        document.getElementById("Weight").value = 80;
+        document.getElementById("Length").value = 175;
+        document.getElementById("BMI").value = 26.12;
+        document.getElementById("DM").value = 1;
+        document.getElementById("HTN").value = 1;
+        document.getElementById("Current Smoker").value = 1;
+        document.getElementById("EX-Smoker").value = 0;
+        document.getElementById("FH").value = "Y";
+        document.getElementById("Obesity").value = "Y";
+        document.getElementById("CRF").value = "N";
+        document.getElementById("CVA").value = "N";
+        document.getElementById("Airway disease").value = "N";
+        document.getElementById("Thyroid Disease").value = "N";
+        document.getElementById("CHF").value = "N";
+        document.getElementById("DLP").value = "Y";
+        document.getElementById("BP").value = 150;
+        document.getElementById("PR").value = 85;
+        document.getElementById("Edema").value = 0;
+        document.getElementById("Weak Peripheral Pulse").value = "N";
+        document.getElementById("Lung rales").value = "N";
+        document.getElementById("Systolic Murmur").value = "N";
+        document.getElementById("Diastolic Murmur").value = "N";
+        document.getElementById("Typical Chest Pain").value = 1;
+        document.getElementById("Dyspnea").value = "Y";
+        document.getElementById("Function Class").value = 3;
+        document.getElementById("Atypical").value = "N";
+        document.getElementById("Nonanginal").value = "N";
+        document.getElementById("Exertional CP").value = "N";
+        document.getElementById("LowTH Ang").value = "N";
+        document.getElementById("Q Wave").value = 1;
+        document.getElementById("St Elevation").value = 0;
+        document.getElementById("St Depression").value = 1;
+        document.getElementById("Tinversion").value = 1;
+        document.getElementById("LVH").value = "Y";
+        document.getElementById("Poor R Progression").value = "N";
+        document.getElementById("BBB").value = "N";
+        document.getElementById("FBS").value = 180;
+        document.getElementById("CR").value = 1.2;
+        document.getElementById("TG").value = 220;
+        document.getElementById("LDL").value = 160;
+        document.getElementById("HDL").value = 32;
+        document.getElementById("BUN").value = 22;
+        document.getElementById("ESR").value = 35;
+        document.getElementById("HB").value = 14.0;
+        document.getElementById("K").value = 4.3;
+        document.getElementById("Na").value = 140;
+        document.getElementById("WBC").value = 9500;
+        document.getElementById("Lymph").value = 28;
+        document.getElementById("Neut").value = 68;
+        document.getElementById("PLT").value = 280;
+        document.getElementById("EF-TTE").value = 38;
+        document.getElementById("Region RWMA").value = 3;
+        document.getElementById("VHD").value = "mild";
+      }
+
+      // Low Risk Patient Test Data
+      function fillLowRisk() {
+        document.getElementById("Age").value = 45;
+        document.getElementById("Sex").value = "Fmale";
+        document.getElementById("Weight").value = 65;
+        document.getElementById("Length").value = 165;
+        document.getElementById("BMI").value = 23.88;
+        document.getElementById("DM").value = 0;
+        document.getElementById("HTN").value = 0;
+        document.getElementById("Current Smoker").value = 0;
+        document.getElementById("EX-Smoker").value = 0;
+        document.getElementById("FH").value = "N";
+        document.getElementById("Obesity").value = "N";
+        document.getElementById("CRF").value = "N";
+        document.getElementById("CVA").value = "N";
+        document.getElementById("Airway disease").value = "N";
+        document.getElementById("Thyroid Disease").value = "N";
+        document.getElementById("CHF").value = "N";
+        document.getElementById("DLP").value = "N";
+        document.getElementById("BP").value = 120;
+        document.getElementById("PR").value = 72;
+        document.getElementById("Edema").value = 0;
+        document.getElementById("Weak Peripheral Pulse").value = "N";
+        document.getElementById("Lung rales").value = "N";
+        document.getElementById("Systolic Murmur").value = "N";
+        document.getElementById("Diastolic Murmur").value = "N";
+        document.getElementById("Typical Chest Pain").value = 0;
+        document.getElementById("Dyspnea").value = "N";
+        document.getElementById("Function Class").value = 0;
+        document.getElementById("Atypical").value = "N";
+        document.getElementById("Nonanginal").value = "N";
+        document.getElementById("Exertional CP").value = "N";
+        document.getElementById("LowTH Ang").value = "N";
+        document.getElementById("Q Wave").value = 0;
+        document.getElementById("St Elevation").value = 0;
+        document.getElementById("St Depression").value = 0;
+        document.getElementById("Tinversion").value = 0;
+        document.getElementById("LVH").value = "N";
+        document.getElementById("Poor R Progression").value = "N";
+        document.getElementById("BBB").value = "N";
+        document.getElementById("FBS").value = 92;
+        document.getElementById("CR").value = 0.9;
+        document.getElementById("TG").value = 110;
+        document.getElementById("LDL").value = 105;
+        document.getElementById("HDL").value = 58;
+        document.getElementById("BUN").value = 15;
+        document.getElementById("ESR").value = 8;
+        document.getElementById("HB").value = 13.5;
+        document.getElementById("K").value = 4.0;
+        document.getElementById("Na").value = 138;
+        document.getElementById("WBC").value = 7000;
+        document.getElementById("Lymph").value = 32;
+        document.getElementById("Neut").value = 60;
+        document.getElementById("PLT").value = 250;
+        document.getElementById("EF-TTE").value = 60;
+        document.getElementById("Region RWMA").value = 0;
+        document.getElementById("VHD").value = "N";
+      }
+
+      function resetForm() {
+        document.getElementById("predictionForm").reset();
+        document.getElementById("resultContainer").classList.remove("show");
+        document.getElementById("errorMessage").classList.remove("show");
+      }
+
+      document
+        .getElementById("predictionForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          // Hide previous results
+          document.getElementById("resultContainer").classList.remove("show");
+          document.getElementById("errorMessage").classList.remove("show");
+
+          // Show loading
+          document.getElementById("loading").classList.add("show");
+          document.getElementById("submitBtn").disabled = true;
+
+          // Collect form data
+          const formData = new FormData(e.target);
+          const data = {};
+
+          for (let [key, value] of formData.entries()) {
+            // Convert numeric fields
+            if (
+              [
+                "Age",
+                "Weight",
+                "Length",
+                "BMI",
+                "DM",
+                "HTN",
+                "Current Smoker",
+                "EX-Smoker",
+                "BP",
+                "PR",
+                "Edema",
+                "Typical Chest Pain",
+                "Function Class",
+                "Q Wave",
+                "St Elevation",
+                "St Depression",
+                "Tinversion",
+                "FBS",
+                "CR",
+                "TG",
+                "LDL",
+                "HDL",
+                "BUN",
+                "ESR",
+                "HB",
+                "K",
+                "Na",
+                "WBC",
+                "Lymph",
+                "Neut",
+                "PLT",
+                "EF-TTE",
+                "Region RWMA",
+              ].includes(key)
+            ) {
+              data[key] = parseFloat(value);
+            } else {
+              data[key] = value;
+            }
+          }
+
+          try {
+            const response = await fetch(`${API_URL}/predict_real`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Server error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            displayResult(result);
+          } catch (error) {
+            console.error("Error:", error);
+            document.getElementById(
+              "errorMessage"
+            ).textContent = `Error: ${error.message}. Make sure the backend server is running at ${API_URL}`;
+            document.getElementById("errorMessage").classList.add("show");
+          } finally {
+            document.getElementById("loading").classList.remove("show");
+            document.getElementById("submitBtn").disabled = false;
+          }
+        });
+
+      function displayResult(result) {
+        const container = document.getElementById("resultContainer");
+        const icon = document.getElementById("resultIcon");
+        const title = document.getElementById("resultTitle");
+        const probability = document.getElementById("resultProbability");
+        const recommendation = document.getElementById("resultRecommendation");
+        const modelInfoGrid = document.getElementById("modelInfoGrid");
+
+        // Remove previous risk classes
+        container.classList.remove("low-risk", "moderate-risk", "high-risk");
+
+        // Set content based on risk level
+        if (result.risk_level === "HIGH RISK") {
+          container.classList.add("high-risk");
+          icon.textContent = "🔴";
+          title.textContent = "HIGH RISK";
+          recommendation.textContent =
+            "⚠️ Immediate medical attention recommended. Consult a cardiologist as soon as possible.";
+        } else if (result.risk_level === "MODERATE RISK") {
+          container.classList.add("moderate-risk");
+          icon.textContent = "🟡";
+          title.textContent = "MODERATE RISK";
+          recommendation.textContent =
+            "⚠️ Schedule a follow-up with your healthcare provider. Further cardiac evaluation may be needed.";
+        } else {
+          container.classList.add("low-risk");
+          icon.textContent = "🟢";
+          title.textContent = "LOW RISK";
+          recommendation.textContent =
+            "✅ Continue maintaining a healthy lifestyle with regular check-ups.";
+        }
+
+        probability.textContent = `${result.risk_percentage.toFixed(2)}%`;
+
+        // Display model info
+        const modelInfo = result.model_info;
+        modelInfoGrid.innerHTML = `
+                <div class="model-stat">
+                    <div class="label">Model</div>
+                    <div class="value">${modelInfo.model_name}</div>
+                </div>
+                <div class="model-stat">
+                    <div class="label">Dataset</div>
+                    <div class="value">${modelInfo.dataset}</div>
+                </div>
+                <div class="model-stat">
+                    <div class="label">Accuracy</div>
+                    <div class="value">${(modelInfo.accuracy * 100).toFixed(
+                      2
+                    )}%</div>
+                </div>
+                <div class="model-stat">
+                    <div class="label">ROC AUC</div>
+                    <div class="value">${(modelInfo.roc_auc * 100).toFixed(
+                      2
+                    )}%</div>
+                </div>
+                <div class="model-stat">
+                    <div class="label">F1 Score</div>
+                    <div class="value">${(modelInfo.f1_score * 100).toFixed(
+                      2
+                    )}%</div>
+                </div>
+                <div class="model-stat">
+                    <div class="label">Features</div>
+                    <div class="value">${modelInfo.n_features}</div>
+                </div>
+            `;
+
+        // Show result with animation
+        container.classList.add("show");
+
+        // Scroll to result
+        container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    </script>
+  </body>
+</html>

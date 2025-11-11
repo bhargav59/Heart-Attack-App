@@ -9,6 +9,10 @@ venv/
 .env.*
 kaggle.json
 
+# Logs
+*.log
+*_log.txt
+
 # Data and models
 app.db
 models/
