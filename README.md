@@ -89,6 +89,22 @@ docker-compose.yml   # Docker setup
 
 ## Quick start (local)
 
+### Super Quick Start (One Command) 🚀
+
+```bash
+./run_app.sh
+```
+
+This script will:
+- ✅ Start the FastAPI backend on port 8000
+- ✅ Open the HTML frontend in your browser
+- ✅ Check backend health
+- ✅ Display access points and logs
+
+To stop: Press `Ctrl+C` or run `./stop_app.sh`
+
+### Manual Setup
+
 ### 1. Install dependencies
 
 ```bash
