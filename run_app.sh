@@ -51,13 +51,13 @@ fi
 # Open HTML frontend
 echo "🌐 Opening HTML frontend..."
 sleep 1
-open frontend/index.html
+open http://localhost:8000/app
 
 echo ""
 echo "✅ Application is running!"
 echo ""
 echo "📍 Access points:"
-echo "   - HTML Frontend: Opened in your browser"
+echo "   - HTML Frontend: http://localhost:8000/app"
 echo "   - Backend API: http://localhost:8000"
 echo "   - API Docs: http://localhost:8000/docs"
 echo ""

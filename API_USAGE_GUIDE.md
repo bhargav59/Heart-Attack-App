@@ -8,22 +8,24 @@ Use the **`/predict_real`** endpoint for production applications - it's trained 
 
 ## 📍 Available Endpoints
 
-| Endpoint | Features | Dataset | Accuracy | ROC AUC | Status |
-|----------|----------|---------|----------|---------|--------|
+| Endpoint               | Features    | Dataset                | Accuracy   | ROC AUC    | Status          |
+| ---------------------- | ----------- | ---------------------- | ---------- | ---------- | --------------- |
 | **`/predict_real`** ⭐ | 56 clinical | Z-Alizadeh Sani (Real) | **86.89%** | **92.38%** | **RECOMMENDED** |
-| `/predict` | 13 standard | UCI Heart Disease | ~85% | ~0.90 | Active |
-| `/predict_indian` | 23 features | Synthetic (Kaggle) | 69.05% | 0.48 | Deprecated |
+| `/predict`             | 13 standard | UCI Heart Disease      | ~85%       | ~0.90      | Active          |
+| `/predict_indian`      | 23 features | Synthetic (Kaggle)     | 69.05%     | 0.48       | Deprecated      |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Base URL
+
 ```
 http://localhost:8000
 ```
 
 ### Test the API
+
 ```bash
 # Check API health
 curl http://localhost:8000/health
@@ -41,6 +43,7 @@ curl http://localhost:8000/
 **POST** `/predict_real`
 
 **Headers:**
+
 ```
 Content-Type: application/json
 ```
@@ -130,6 +133,7 @@ Content-Type: application/json
 ### Field Descriptions
 
 #### Demographics
+
 - **Age** (int): Age in years (18-120)
 - **Sex** (str): "Male" or "Fmale"
 - **Weight** (float): Weight in kg (30-200)
@@ -137,6 +141,7 @@ Content-Type: application/json
 - **BMI** (float): Body Mass Index (10-60)
 
 #### Risk Factors
+
 - **DM** (int): Diabetes Mellitus (0=No, 1=Yes)
 - **HTN** (int): Hypertension (0=No, 1=Yes)
 - **Current Smoker** (int): Currently smoking (0=No, 1=Yes)
@@ -145,6 +150,7 @@ Content-Type: application/json
 - **Obesity** (str): Obese ("N" or "Y")
 
 #### Medical History
+
 - **CRF** (str): Chronic Renal Failure ("N" or "Y")
 - **CVA** (str): Cerebrovascular Accident/Stroke ("N" or "Y")
 - **Airway disease** (str): Asthma/COPD ("N" or "Y")
@@ -153,17 +159,20 @@ Content-Type: application/json
 - **DLP** (str): Dyslipidemia/High cholesterol ("N" or "Y")
 
 #### Vital Signs
+
 - **BP** (int): Blood Pressure - systolic (60-250 mmHg)
 - **PR** (int): Pulse Rate (40-200 bpm)
 - **Edema** (int): Swelling (0=No, 1=Yes)
 
 #### Physical Exam
+
 - **Weak Peripheral Pulse** (str): Weak pulse ("N" or "Y")
 - **Lung rales** (str): Lung crackles ("N" or "Y")
 - **Systolic Murmur** (str): Heart murmur during systole ("N" or "Y")
 - **Diastolic Murmur** (str): Heart murmur during diastole ("N" or "Y")
 
 #### Symptoms
+
 - **Typical Chest Pain** (int): Classic angina (0=No, 1=Yes)
 - **Dyspnea** (str): Shortness of breath ("N" or "Y")
 - **Function Class** (int): NYHA functional class (0-4)
@@ -173,6 +182,7 @@ Content-Type: application/json
 - **LowTH Ang** (str): Low threshold angina ("N" or "Y")
 
 #### ECG Findings
+
 - **Q Wave** (int): Pathological Q wave (0=No, 1=Yes)
 - **St Elevation** (int): ST segment elevation (0=No, 1=Yes)
 - **St Depression** (int): ST segment depression (0=No, 1=Yes)
@@ -182,6 +192,7 @@ Content-Type: application/json
 - **BBB** (str): Bundle Branch Block ("N", "LBBB", or "RBBB")
 
 #### Laboratory Tests
+
 - **FBS** (float): Fasting Blood Sugar (50-500 mg/dL)
 - **CR** (float): Creatinine (0.3-15 mg/dL)
 - **TG** (float): Triglycerides (30-1000 mg/dL)
@@ -198,17 +209,18 @@ Content-Type: application/json
 - **PLT** (float): Platelets (50-1000 ×10³/μL)
 
 #### Echocardiography
+
 - **EF-TTE** (float): Ejection Fraction (10-80%)
 - **Region RWMA** (int): Regional Wall Motion Abnormality regions (0-5)
 - **VHD** (str): Valvular Heart Disease ("N", "mild", "Moderate", "Severe")
 
 ### Risk Interpretation
 
-| Risk Level | Risk % | Interpretation |
-|-----------|--------|----------------|
-| **LOW RISK** | 0-39% | Low probability of CAD |
-| **MODERATE RISK** | 40-69% | Moderate CAD risk, further testing recommended |
-| **HIGH RISK** | 70-100% | High CAD probability, immediate medical attention |
+| Risk Level        | Risk %  | Interpretation                                    |
+| ----------------- | ------- | ------------------------------------------------- |
+| **LOW RISK**      | 0-39%   | Low probability of CAD                            |
+| **MODERATE RISK** | 40-69%  | Moderate CAD risk, further testing recommended    |
+| **HIGH RISK**     | 70-100% | High CAD probability, immediate medical attention |
 
 ---
 
@@ -227,6 +239,7 @@ This tests both HIGH RISK and LOW RISK patient profiles.
 ## 📊 Model Performance
 
 ### Z-Alizadeh Sani Model (Real Data)
+
 - **Dataset**: 303 Asian patients from real hospital coronary angiography
 - **Source**: UCI Machine Learning Repository (peer-reviewed)
 - **Training**: Stacking Ensemble (6 models)
@@ -237,6 +250,7 @@ This tests both HIGH RISK and LOW RISK patient profiles.
 - **Specificity**: 83.3% (correctly identifies 83.3% of normal cases)
 
 ### Feature Engineering
+
 - **Input**: 56 clinical features
 - **Engineered**: 18 additional features (CV risk score, ECG abnormality, metabolic syndrome, lipid ratios, etc.)
 - **Selected**: 40 best features by mutual information
@@ -249,10 +263,12 @@ This tests both HIGH RISK and LOW RISK patient profiles.
 ### Common Issues
 
 1. **500 Error: Type mismatch**
+
    - Ensure all categorical fields use correct values ("Y"/"N", "Male"/"Fmale", etc.)
    - Check numeric fields are numbers, not strings
 
 2. **422 Validation Error**
+
    - Verify all 56 required fields are present
    - Check field names match exactly (including spaces like "Current Smoker")
    - Ensure values are within valid ranges
@@ -275,6 +291,7 @@ This tests both HIGH RISK and LOW RISK patient profiles.
 ## 🎯 Production Deployment
 
 ### Environment Setup
+
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -284,6 +301,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ### Health Check
+
 ```bash
 curl http://your-domain/health
 ```

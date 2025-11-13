@@ -34,6 +34,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 You should see:
+
 ```
 INFO:     Started server process
 INFO:     Waiting for application startup.
@@ -50,8 +51,9 @@ curl http://localhost:8000/health
 ```
 
 Expected response:
+
 ```json
-{"status": "ok", "model_loaded": true}
+{ "status": "ok", "model_loaded": true }
 ```
 
 ### 4. Choose Your Interface
@@ -72,6 +74,7 @@ xdg-open frontend/index.html
 ```
 
 **Features:**
+
 - 56 clinical input fields
 - Beautiful gradient design
 - Quick-fill test cases
@@ -91,6 +94,7 @@ streamlit run app.py
 Then open http://localhost:8501 in your browser.
 
 **Features:**
+
 - 13 standard features
 - Simple slider-based input
 - Lightweight interface
@@ -99,13 +103,13 @@ Then open http://localhost:8501 in your browser.
 
 ### System Requirements
 
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| Python | 3.8 | 3.10+ |
-| RAM | 4GB | 8GB+ |
-| Storage | 500MB | 1GB |
-| CPU | Dual-core | Quad-core |
-| Browser | Any modern | Chrome/Firefox |
+| Component | Minimum    | Recommended    |
+| --------- | ---------- | -------------- |
+| Python    | 3.8        | 3.10+          |
+| RAM       | 4GB        | 8GB+           |
+| Storage   | 500MB      | 1GB            |
+| CPU       | Dual-core  | Quad-core      |
+| Browser   | Any modern | Chrome/Firefox |
 
 ### Installation Steps
 
@@ -137,6 +141,7 @@ pip install -r requirements.txt
 ```
 
 This installs:
+
 - FastAPI (backend framework)
 - scikit-learn (ML models)
 - pandas, numpy (data processing)
@@ -228,6 +233,7 @@ Use sliders and dropdowns to input 13 standard features.
 3. **View Results**
 
 Risk assessment displays automatically with:
+
 - Risk level
 - Percentage
 - Risk factors identified
@@ -256,6 +262,7 @@ python test_real_endpoint.py
 ```
 
 This tests:
+
 - HIGH RISK patient (expected: 99.91%)
 - LOW RISK patient (expected: 4.08%)
 
@@ -287,6 +294,7 @@ python train_z_alizadeh_model.py
 ```
 
 This will:
+
 1. Load the Z-Alizadeh Sani dataset (303 patients)
 2. Perform feature engineering (56 → 74 → 40 features)
 3. Apply SMOTE-Tomek for class balancing
@@ -296,6 +304,7 @@ This will:
 5. Save models to `models/`
 
 **Expected Performance:**
+
 - Accuracy: ~86.89%
 - ROC AUC: ~92.38%
 - F1 Score: ~91.11%
@@ -331,11 +340,13 @@ taskkill /PID <PID> /F
 3. **"Model file not found"**
 
 Ensure these files exist:
+
 - `models/heart_attack_model_real.pkl`
 - `models/scaler_real.pkl`
 - `models/feature_names_real.pkl`
 
 If missing, run:
+
 ```bash
 python train_z_alizadeh_model.py
 ```
@@ -365,16 +376,19 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 ## Next Steps
 
 1. **Explore the Application**
+
    - Try the modern web interface with quick-fill test cases
    - Test different patient profiles
    - Compare risk predictions
 
 2. **Learn the API**
+
    - Visit http://localhost:8000/docs
    - Try different endpoints
    - Review `API_USAGE_GUIDE.md`
 
 3. **Understand the Model**
+
    - Read `REAL_DATA_TRAINING_REPORT.md`
    - Review feature engineering in `ml/feature_engineering.py`
    - Check model code in `backend/ml_service_z_alizadeh.py`
@@ -425,6 +439,7 @@ This application is for **educational and research purposes only**. It is NOT a 
 ---
 
 **Need Help?**
+
 - Check the documentation
 - Review code comments
 - Open an issue on GitHub

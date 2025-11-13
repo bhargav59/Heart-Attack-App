@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Heart Attack Risk Predictor - Real Medical Data</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>❤️</text></svg>"
+    />
     <style>
       * {
         margin: 0;
@@ -988,7 +992,7 @@
         document.getElementById("Sex").value = "Male";
         document.getElementById("Weight").value = 80;
         document.getElementById("Length").value = 175;
-        document.getElementById("BMI").value = 26.12;
+        document.getElementById("BMI").value = 26.1;
         document.getElementById("DM").value = 1;
         document.getElementById("HTN").value = 1;
         document.getElementById("Current Smoker").value = 1;
@@ -1047,7 +1051,7 @@
         document.getElementById("Sex").value = "Fmale";
         document.getElementById("Weight").value = 65;
         document.getElementById("Length").value = 165;
-        document.getElementById("BMI").value = 23.88;
+        document.getElementById("BMI").value = 23.8;
         document.getElementById("DM").value = 0;
         document.getElementById("HTN").value = 0;
         document.getElementById("Current Smoker").value = 0;
@@ -1270,6 +1274,18 @@
         // Scroll to result
         container.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
+
+      // Restrict BMI to 1 decimal place
+      document.getElementById("BMI").addEventListener("input", function (e) {
+        let value = e.target.value;
+        // If value has more than 1 decimal place, truncate it
+        if (value.includes(".")) {
+          const parts = value.split(".");
+          if (parts[1] && parts[1].length > 1) {
+            e.target.value = parts[0] + "." + parts[1].charAt(0);
+          }
+        }
+      });
     </script>
   </body>
 </html>

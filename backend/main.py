@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List
+from pathlib import Path
 
 from .config import CORS_ORIGINS
 from .database import Base, engine, get_db
@@ -44,11 +47,19 @@ def get_ml_indian() -> MLServiceIndian:
         _ml_indian = MLServiceIndian()
     return _ml_indian
 
+# Serve the HTML frontend
+@app.get("/app")
+async def serve_frontend():
+    """Serve the HTML frontend at /app"""
+    frontend_path = Path(__file__).parent.parent / "frontend" / "index.html"
+    return FileResponse(frontend_path)
+
 @app.get("/")
 async def root():
     return {
         "message": "Heart Attack Risk Prediction API",
         "version": "1.0.0",
+        "frontend": "http://localhost:8000/app",
         "endpoints": {
             "health": "/health",
             "predict": "/predict (POST) - Standard 13 features (UCI Heart Disease)",
